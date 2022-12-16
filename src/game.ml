@@ -1,3 +1,5 @@
+Random.self_init ()
+
 open Card
 open CircleList
 
@@ -77,6 +79,42 @@ let initiate n money d =
         dealer = first_deal;
       };
     difficulty = d;
+  }
+
+let distribute_cards state =
+  let x = draw_cards (List.length state.computers + 1) in
+  let ccards = List.map (fun x -> create_com_card x false) (List.hd x) in
+  let pcards = List.tl x in
+  let new_mp =
+    { state.main_player with cards = List.nth pcards 0; last_bet = 0 }
+  in
+  let count = ref 0 in
+  let new_computers =
+    List.map
+      (fun x ->
+        count := !count + 1;
+        { x with cards = List.nth pcards !count; last_bet = 0 })
+      state.computers
+  in
+  let new_actives = new_mp :: new_computers in
+  let first_deal =
+    List.nth new_actives (Random.int (List.length new_actives))
+  in
+  let new_gs =
+    {
+      actives = new_actives;
+      last_raise = first_deal;
+      pool = 0;
+      curr_bet = 0;
+      dealer = first_deal;
+    }
+  in
+  {
+    state with
+    community_cards = ccards;
+    main_player = new_mp;
+    computers = new_computers;
+    game_state = new_gs;
   }
 
 let show_flop st =

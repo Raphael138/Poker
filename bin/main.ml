@@ -39,12 +39,6 @@ let rec get_input low high =
       "Input is either too high or too low ";
     get_input low high)
 
-let quit input = if input = "quit" then false else true
-
-(* let play_game state = let s = ref state in while quit (print_string "Click
-   enter to continue. Type \"quit\" to leave. \n > "; read_line ()) do s :=
-   round_1 !s; print_state !s done *)
-
 let get_winners st =
   let active_cards = get_card_list st in
   let winners = rank active_cards (get_community_cards st) in
@@ -62,6 +56,12 @@ let reset_state st = get_winners st |> empty_pool st
 let print_helper st =
   print_state st;
   st
+
+let quit () =
+  print_string
+    "Type \"quit\" to exit the game and anything else to continue playing\n> ";
+  let x = read_line () in
+  if x = "quit" then true else false
 
 let rec game (r1 : bool) (first_bet : bool) (st : state) =
   if r1 then first_round false st |> game false true
@@ -81,7 +81,7 @@ let main () =
   print_endline start_message2;
   print_endline
     "Please enter the number of opponents you want to play with(between 3 and \
-     12).\n";
+     12).";
   let num_players = get_input 3 12 + 1 in
   print_endline ("Number of players: " ^ string_of_int num_players ^ "\n");
   print_endline "Please enter the difficulty (1 for easy or 2 for hard)";
@@ -89,7 +89,16 @@ let main () =
   print_endline ("Difficulty: " ^ if difficulty = 1 then "Easy" else "Hard");
   let x = initiate num_players start_money difficulty in
   print_state x;
-  let finished_game = game true false x in
-  print_end (reset_state finished_game)
+  let game_state = ref (game true false x) in
+  game_state := reset_state !game_state;
+  print_end !game_state;
+  while not (quit ()) do
+    game_state := distribute_cards !game_state;
+    print_state !game_state;
+    game_state := game true false !game_state;
+    game_state := reset_state !game_state;
+    print_end !game_state
+  done;
+  print_endline "Thanks for playing !!"
 
 let () = main ()

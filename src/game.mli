@@ -47,6 +47,10 @@ val initiate : int -> int -> int -> state
 (**[initiate n deck money] initiate a state object with n players who have cards
    in deck [deck] and have starting money [money] *)
 
+val distribute_cards : state -> state
+(** [distribute_cards state] reinitiates all the bets and redistributes random 
+    cards to all the players and replaces the community cards.*)
+
 val get_cards : player -> card list
 (**[get_cards player] returns the card list of the player*)
 
